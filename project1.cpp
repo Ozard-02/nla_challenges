@@ -35,7 +35,7 @@ int main(int argc, char* argv[]){
     MatrixXd noisy_image = random_Noise_Generator(image);
     Matrix<unsigned char, Dynamic, Dynamic, RowMajor> noisi_final_image(height, width);
     noisi_final_image = noisy_image.unaryExpr([](double val) -> unsigned char {
-    return static_cast<unsigned char>(val * 255.0);
+    return static_cast<unsigned char>(val);
   });
 
 
