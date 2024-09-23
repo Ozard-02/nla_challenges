@@ -31,6 +31,7 @@ int main(int argc, char* argv[]){
         }
     }
     stbi_image_free(image_data);
+    std::cout<<"the matrix has:"<<image.rows()<<"rows and"<<image.cols()<<"columns"<<std::endl;
 
     MatrixXd noisy_image = random_Noise_Generator(image);
     Matrix<unsigned char, Dynamic, Dynamic, RowMajor> noisi_final_image(height, width);
