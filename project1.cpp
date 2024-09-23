@@ -1,7 +1,6 @@
 #include <Eigen/Dense>
 #include <iostream>
 
-// from https://github.com/nothings/stb/tree/master
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -28,7 +27,7 @@ int main(int argc, char* argv[]){
     for (int i = 0; i < height; ++i) {
     for (int j = 0; j < width; ++j) {
       int index = (i * width + j);
-      image(i, j) = static_cast<double>(image_data[index]) / 255.0;
+      image(i, j) = static_cast<double>(image_data[index]);
         }
     }
     stbi_image_free(image_data);
@@ -36,8 +35,8 @@ int main(int argc, char* argv[]){
     MatrixXd noisy_image = random_Noise_Generator(image);
     Matrix<unsigned char, Dynamic, Dynamic, RowMajor> noisi_final_image(height, width);
     noisi_final_image = noisy_image.unaryExpr([](double val) -> unsigned char {
-    return static_cast<unsigned char>(val * 255.0);
-  })
+    return static_cast<unsigned char>(val);
+  });
 
 
 
