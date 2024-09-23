@@ -10,7 +10,7 @@ using namespace Eigen;
 
 MatrixXd random_Noise_Generator(const MatrixXd& image) {
   MatrixXd noise= MatrixXd::Random(image.rows(), image.cols());
-  MatrixXd noise_Added_Image = image + 50*noise;
+  MatrixXd noise_Added_Image = image + (50.0/255.0)*noise;
 
   return noise_Added_Image;
 }
@@ -28,7 +28,7 @@ int main(int argc, char* argv[]){
     for (int i = 0; i < height; ++i) {
     for (int j = 0; j < width; ++j) {
       int index = (i * width + j);
-      image(i, j) = static_cast<double>(image_data[index]);
+      image(i, j) = static_cast<double>(image_data[index] / 255.0);
         }
     }
     stbi_image_free(image_data);
@@ -37,7 +37,7 @@ int main(int argc, char* argv[]){
     MatrixXd noisy_image = random_Noise_Generator(image);
     Matrix<unsigned char, Dynamic, Dynamic, RowMajor> noisi_final_image(height, width);
     noisi_final_image = noisy_image.unaryExpr([](double val) -> unsigned char {
-    return static_cast<unsigned char>(val);
+    return static_cast<unsigned char>(val * 255.0);
   });
 
 
