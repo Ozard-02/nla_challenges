@@ -22,8 +22,25 @@ int main(int argc, char* argv[]){
     return 1;
     }
     const char* input_image_path = argv[1];
-    int width, height;
-    unsigned char* image_data = stbi_load(input_image_path, &width, &height);  // Force load as RGB
+    int width, height, channels;
+    unsigned char* image_data = stbi_load(input_image_path, &width, &height,&channels, 1);
+    MatrixXd image(height, width);
+    for (int i = 0; i < height; ++i) {
+    for (int j = 0; j < width; ++j) {
+      int index = (i * width + j);
+      image(i, j) = static_cast<double>(image_data[index]) / 255.0;
+        }
+    }
+    stbi_image_free(image_data);
+
+    MatrixXd noisy_image = random_Noise_Generator(image);
+    Matrix<unsigned char, Dynamic, Dynamic, RowMajor> noisi_final_image(height, width);
+    noisi_final_image = noisy_image.unaryExpr([](double val) -> unsigned char {
+    return static_cast<unsigned char>(val * 255.0);
+  })
+
+
+
 
 
     return 0;
