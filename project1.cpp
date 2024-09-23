@@ -24,6 +24,7 @@ int main(int argc, char* argv[]){
     int width, height, channels;
     unsigned char* image_data = stbi_load(input_image_path, &width, &height,&channels, 1);
     MatrixXd image(height, width);
+    std::cout << "Image size: " << height << "x" << width << std::endl;
     for (int i = 0; i < height; ++i) {
     for (int j = 0; j < width; ++j) {
       int index = (i * width + j);
