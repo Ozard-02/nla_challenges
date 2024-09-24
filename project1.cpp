@@ -1,4 +1,5 @@
 #include <Eigen/Dense>
+#include <Eigen/Sparse>
 #include <iostream>
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -58,24 +59,23 @@ int main(int argc, char* argv[]){
 
   // Task 4 //
   MatrixXd H_av2=(1.0/9.0)*MatrixXd::Ones(3,3);
-  MatrixXd A1(height*width, height*width);
+  vector<Triplet<double>> tripletList;
+  tripletList.reserve(9*height*width);
+  SparseMatrix<double> A1(height*width, height*width);
   for(int i=0; i<height*width; i++){
     for(int j=0; j<height*width; j++){
+      double g_ij=0;
       for(int k=0; k<i+1; k++){
         for(int l=0; l<j+1; l++){
-          if(l>3||k>3) A1(i, j)+=0;
-          else A1(i, j)+=image(k, l)*H_av2(i-k+1, j-l+1);
+          if(l>3||k>3) g_ij+=0;
+          else g_ij+=image(k, l)*H_av2(i-k+1, j-l+1);
         }
       }
+      tripletList.push_back(Triplet<double>(i, j, g_ij));
     }
   }
-  int count=0;
-  for(int i=0; i<height*width; i++){
-    for(int j=0; j<height*width; j++){
-      if(A1(i,j)!=0) count++;
-    }
-  }
-  cout<<count<<endl;
+  A1.setFromTriplets(tripletList.begin(), tripletList.end());
+  cout<<A1.nonZeros()<<endl;
 
   return 0;
 }
