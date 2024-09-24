@@ -57,6 +57,25 @@ int main(int argc, char* argv[]){
   cout << "Norm of vector v, ||v||=" << v.norm() << endl;
 
   // Task 4 //
-  
+  MatrixXd H_av2=(1.0/9.0)*MatrixXd::Ones(3,3);
+  MatrixXd A1(height*width, height*width);
+  for(int i=0; i<height*width; i++){
+    for(int j=0; j<height*width; j++){
+      for(int k=0; k<i+1; k++){
+        for(int l=0; l<j+1; l++){
+          if(l>3||k>3) A1(i, j)+=0;
+          else A1(i, j)+=image(k, l)*H_av2(i-k+1, j-l+1);
+        }
+      }
+    }
+  }
+  int count=0;
+  for(int i=0; i<height*width; i++){
+    for(int j=0; j<height*width; j++){
+      if(A1(i,j)!=0) count++;
+    }
+  }
+  cout<<count<<endl;
+
   return 0;
 }
