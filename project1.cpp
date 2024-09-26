@@ -61,14 +61,14 @@ int main(int argc, char* argv[]){
   MatrixXd H_av2=(1.0/9.0)*MatrixXd::Ones(3,3);
   vector<Triplet<double>> tripletList;
   tripletList.reserve(9*height*width);
-  SparseMatrix<double> A1(height*width, height*width);
-  for(int i=0; i<height*width; i++){
-    for(int j=0; j<height*width; j++){
+  SparseMatrix<double, RowMajor> A1(height*width, height*width);
+  for(int i=0; i<height; i++){
+    for(int j=0; j<width; j++){
       double g_ij=0;
-      for(int k=0; k<i+1; k++){
-        for(int l=0; l<j+1; l++){
-          if(l>3||k>3) g_ij+=0;
-          else g_ij+=image(k, l)*H_av2(i-k+1, j-l+1);
+      for(int k=-1; k<=1; k++){
+        for(int l=-1; l<=1; l++){
+          if(i+k<0||j+l<0||i+k>width||j+l>height) g_ij+=0;
+          else g_ij+=v((i+k)*width+(j+l))*H_av2(1+k, 1+l);
         }
       }
       tripletList.push_back(Triplet<double>(i, j, g_ij));
@@ -76,6 +76,20 @@ int main(int argc, char* argv[]){
   }
   A1.setFromTriplets(tripletList.begin(), tripletList.end());
   cout<<A1.nonZeros()<<endl;
+  VectorXd vector_smoothed=A1*v;
+  MatrixXd smoothed_image(height, width);
+  for (int i = 0; i < height; ++i) {
+    for (int j = 0; j < width; ++j) {
+      int index = (i * width + j);
+      smoothed_image(i, j) = static_cast<double>(image_data[index] / 255.0);
+    }
+  }
+  const string output_smoothed_image_path = "output_smoothed.png";
+  if (stbi_write_png(output_smoothed_image_path.c_str(), width, height, 1, smoothed_image.data(), width) == 0) {
+    cerr << "Error: Could not save smoothed image" << endl;
+    return 1;
+    }
+  cout << "Smoothed image saved to " << output_smoothed_image_path << endl;
 
   return 0;
 }
