@@ -63,19 +63,15 @@ int main(int argc, char* argv[]){
   tripletList.reserve(9*height*width);
   SparseMatrix<double> A1(height*width, height*width);
   for(int i=0; i<height*width; i++){
-    for(int j=0; j<height*width; j++){
-      double g_ij=0;
-      for(int k=0; k<i+1; k++){
-        for(int l=0; l<j+1; l++){
-          if(l>3||k>3) g_ij+=0;
-          else g_ij+=image(k, l)*H_av2(i-k+1, j-l+1);
-        }
+    for( int j= -1; j<=1; j++){
+      for ( int k= -1; k<=1; k++){
+        if(i/width+j<0 || i/width+j>height-1 || i%width+k<0 || i%width+k>width-1){continue;}
+        tripletList.push_back(Triplet<double>(i, j*width+k, 1.0/9.0));
       }
-      tripletList.push_back(Triplet<double>(i, j, g_ij));
-    }
+    }  
   }
   A1.setFromTriplets(tripletList.begin(), tripletList.end());
-  cout<<A1.nonZeros()<<endl;
-
+  std::cout<<A1.nonZeros()<<endl;
+  std::cout<<A1<<endl;
   return 0;
 }
