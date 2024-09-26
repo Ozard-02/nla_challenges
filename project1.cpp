@@ -104,7 +104,7 @@ int main(int argc, char* argv[]){
 
    Matrix<unsigned char, Dynamic, Dynamic, RowMajor> smoothed_final_image(height, width);
   smoothed_final_image = smoothed.unaryExpr([](double val) -> unsigned char {
-  return static_cast<unsigned char>(val * 255.0);
+  return static_cast<unsigned char>(val);
   });
   const string output_smooth_image_path = "output_smooth.png";
   if (stbi_write_png(output_smooth_image_path.c_str(), width, height, 1, smoothed_final_image.data(), width) == 0) {
