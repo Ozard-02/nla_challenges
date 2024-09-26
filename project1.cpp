@@ -58,20 +58,36 @@ int main(int argc, char* argv[]){
   cout << "Norm of vector v, ||v||=" << v.norm() << endl;
 
   // Task 4 //
-  MatrixXd H_av2=(1.0/9.0)*MatrixXd::Ones(3,3);
-  vector<Triplet<double>> tripletList;
-  tripletList.reserve(9*height*width);
-  SparseMatrix<double> A1(height*width, height*width);
-  for(int i=0; i<height*width; i++){
-    for( int j= -1; j<=1; j++){
-      for ( int k= -1; k<=1; k++){
-        if(i/width+j<0 || i/width+j>height-1 || i%width+k<0 || i%width+k>width-1){continue;}
-        tripletList.push_back(Triplet<double>(i, j*width+k, 1.0/9.0));
-      }
-    }  
-  }
-  A1.setFromTriplets(tripletList.begin(), tripletList.end());
-  std::cout<<A1.nonZeros()<<endl;
-  std::cout<<A1<<endl;
+   vector<Triplet<double>> tripletList;
+    tripletList.reserve(9 * height * width); // Reserve space for triplets
+    SparseMatrix<double> A1(height * width, height * width);
+
+    for (int i = 0; i < height * width; i++) {
+        int row = i / width; // Current row
+        int col = i % width; // Current column
+
+        for (int j = -1; j <= 1; j++) {
+            for (int k = -1; k <= 1; k++) {
+                // Calculate neighbor indices
+                int neighborRow = row + j;
+                int neighborCol = col + k;
+
+                // Check if the neighbor indices are within bounds
+                if (neighborRow >= 0 && neighborRow < height && neighborCol >= 0 && neighborCol < width) {
+                    int neighborIndex = neighborRow * width + neighborCol; // Calculate the linear index
+                    tripletList.push_back(Triplet<double>(i, neighborIndex, 1.0 / 9.0));
+                }
+            }
+        }
+    }
+
+    // Construct the sparse matrix from the triplet list
+    A1.setFromTriplets(tripletList.begin(), tripletList.end());
+    A1.makeCompressed();
+
+    // Output the sparse matrix for verification
+    cout << "Sparse Matrix A1:\n" << MatrixXd(A1) << endl;
+  //std::cout<<A1.nonZeros()<<endl;
+ 
   return 0;
 }
