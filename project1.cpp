@@ -91,19 +91,19 @@ int main(int argc, char* argv[]){
 
 
 
-  std::cout << MatrixXd(A1.block(0, 0, 10, 10)) << std::endl;
+ // std::cout << MatrixXd(A1.block(0, 0, 100, 100)) << std::endl;
   
   VectorXd smoothed_image=A1*v;
 
-std::cout << "Smoothed image min: " << smoothed_image.minCoeff() << std::endl;
-std::cout << "Smoothed image max: " << smoothed_image.maxCoeff() << std::endl;
+//std::cout << "Smoothed image min: " << smoothed_image.minCoeff() << std::endl;
+//std::cout << "Smoothed image max: " << smoothed_image.maxCoeff() << std::endl;
 
   smoothed_image *= 255.0;
 
   MatrixXd smoothed(height, width);
-    for (int i = 0; i < height; ++i) {
-    for (int j = 0; j < width; ++j) {
-      int index = (i * width + j);
+    for (int i = 0; i < height; i++) {
+    for (int j = 0; j < width; j++) {
+      int index = (i + height * j);
       smoothed(i, j) = static_cast<double>(smoothed_image[index]);
     }
   }
@@ -111,7 +111,7 @@ std::cout << "Smoothed image max: " << smoothed_image.maxCoeff() << std::endl;
 
    Matrix<unsigned char, Dynamic, Dynamic, RowMajor> smoothed_final_image(height, width);
   smoothed_final_image = smoothed.unaryExpr([](double val) -> unsigned char {
-  return static_cast<unsigned char>(std::clamp(val, 0.0, 255.0));
+  return static_cast<unsigned char>(val);
   });
   const string output_smooth_image_path = "output_smooth.png";
   if (stbi_write_png(output_smooth_image_path.c_str(), width, height, 1, smoothed_final_image.data(), width) == 0) {
