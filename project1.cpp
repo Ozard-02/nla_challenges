@@ -86,8 +86,33 @@ int main(int argc, char* argv[]){
     A1.makeCompressed();
 
     // Output the sparse matrix for verification
-    cout << "Sparse Matrix A1:\n" << MatrixXd(A1) << endl;
-  //std::cout<<A1.nonZeros()<<endl;
+    //cout << "Sparse Matrix A1:\n" << MatrixXd(A1) << endl;
+  std::cout<< "numero di non zeri: "<<A1.nonZeros()<<endl;
+
+
+
+  VectorXd smoothed_image=A1*v;
+
+  MatrixXd smoothed(height, width);
+    for (int i = 0; i < height; ++i) {
+    for (int j = 0; j < width; ++j) {
+      int index = (i * width + j);
+      image(i, j) = static_cast<double>(smoothed_image[index]);
+    }
+  }
+
+
+   Matrix<unsigned char, Dynamic, Dynamic, RowMajor> smoothed_final_image(height, width);
+  smoothed_final_image = smoothed.unaryExpr([](double val) -> unsigned char {
+  return static_cast<unsigned char>(val * 255.0);
+  });
+  const string output_smooth_image_path = "output_smooth.png";
+  if (stbi_write_png(output_smooth_image_path.c_str(), width, height, 1, smoothed_final_image.data(), width) == 0) {
+    cerr << "Error: Could not save noisy image" << endl;
+    return 1;
+    }
+  cout << "smooth image saved to " << output_smooth_image_path << endl;
+
  
   return 0;
 }
