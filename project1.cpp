@@ -91,9 +91,11 @@ int main(int argc, char* argv[]){
 
 
 
- // std::cout << MatrixXd(A1.block(0, 0, 100, 100)) << std::endl;
+std::cout << MatrixXd(A1.block(4333, 0, 10, 10)) << std::endl;
   
   VectorXd smoothed_image=A1*v;
+//cout << "number of elements smoothed_image" << smoothed_image.size() << ". Is the size equal to mn? " << ((smoothed_image.size()==height*width)?"True":"False") << endl;
+  
 
 //std::cout << "Smoothed image min: " << smoothed_image.minCoeff() << std::endl;
 //std::cout << "Smoothed image max: " << smoothed_image.maxCoeff() << std::endl;
