@@ -58,9 +58,8 @@ int main(int argc, char* argv[]){
   cout << "Noisy image saved to " << output_noisy_image_path << endl;
 
   // Task 3 //
-  VectorXd v=Map<VectorXd>(image.data(), image.size());
+  VectorXd v=Map<VectorXd>(image.transpose().data(), image.size());
   cout << "Reshape the image matrix into a vector v of size " << v.size() << ". Is the size equal to mn? " << ((v.size()==height*width)?"True":"False") << endl;
-
 
   // int c=0;
 
@@ -79,7 +78,7 @@ int main(int argc, char* argv[]){
 
   // cout<<"Numero di valori diversi="<<c<<endl;
 
-  VectorXd w=Map<VectorXd>(noisy_image.data(), noisy_image.size());
+  VectorXd w=Map<VectorXd>(noisy_image.transpose().data(), noisy_image.size());
   cout << "Reshape the noisy image matrix into a vector w of size " << w.size() << ". Is the size equal to mn? " << ((w.size()==height*width)?"True":"False") << endl;
   cout << "Norm of vector v, ||v||=" << v.norm() << endl;
 
@@ -90,7 +89,7 @@ int main(int argc, char* argv[]){
 
   for (int i = 0; i < height * width; i++) {
 
-    //i=col*width+row
+    //i=row*width+col
       int row = i % width; // Current row
       int col = i / width; // Current column
 
@@ -111,7 +110,46 @@ int main(int argc, char* argv[]){
           }
       }
   }
+
   A1.setFromTriplets(tripletList.begin(), tripletList.end());
+
+  cout<<"A1 creata"<<endl;
+
+  MatrixXd prova(height, width);
+
+  cout<<"Inizio convoluzione"<<endl;
+
+  //prova convoluzione
+  for(int i=0; i<height; i++){
+    for(int j=0; j<width; j++){
+      double somma=0;
+      for(int k=-1; k<=1; k++){
+        for(int l=-1; l<=1; l++){
+          int neighborRow = i + k;
+          int neighborCol = j + l;
+          if (neighborRow >= 0 && neighborRow < height && neighborCol >= 0 && neighborCol < width) {
+            somma+=image(neighborRow,neighborCol)*1.0/9.0;
+          }
+        }
+      }
+      prova(i, j)=somma;
+    }
+  }
+
+  cout<<endl<<"Convoluzione fatta"<<endl;
+
+  Matrix<unsigned char, Dynamic, Dynamic, RowMajor> smoothed_prova_image(height, width);
+   cout<<"The matrix has: "<<prova.rows()<<" rows and "<<prova.cols()<<" columns"<<endl;
+  smoothed_prova_image = prova.unaryExpr([](double val) -> unsigned char {
+  return static_cast<unsigned char>(std::clamp(val, 0.0, 255.0));
+  });
+  const string smoothed_prova_image_path = "output_porva_smooth.png";
+  if (stbi_write_png(smoothed_prova_image_path.c_str(), width, height, 1, smoothed_prova_image_path.data(), width) == 0) {
+    cerr << "Error: Could not save noisy image" << endl;
+    return 1;
+    }
+  cout << "smooth image saved to " << smoothed_prova_image_path << endl;
+
 
   //cout << "Sparse Matrix A1:\n" << MatrixXd(A1) << endl;
   std::cout<< "numero di non zeri: "<<A1.nonZeros()<<endl;
@@ -127,42 +165,55 @@ int main(int argc, char* argv[]){
   //std::cout << "Smoothed image min: " << smoothed_image.minCoeff() << std::endl;
   //std::cout << "Smoothed image max: " << smoothed_image.maxCoeff() << std::endl;
 
-  // smoothed_image *= 255.0;
+  smoothed_image *= 255.0;
 
-  MatrixXd smoothed(width, height);
+  MatrixXd smoothed(height, width);
+
+  cout<<"The matrix has: "<<smoothed.rows()<<" rows and "<<smoothed.cols()<<" columns"<<endl;
+
     for (int i = 0; i < width; i++) {
-      for (int j = 0; j < height; j++) {
-      int index = (width*j+i);
+      for (int j = 0; j <height ; j++) {
+      int index = width*i+j;
       smoothed(i, j) = static_cast<double>(smoothed_image[index]);
     }
   }
+
+  cout<<"-----------------------"<<endl;
 
   double somma=0;
 
   double vettore[6];
   int c=0;
 
+  //
+
+  cout<<"--------------------"<<endl;
+  cout<<v(1)<<endl;
   for(int i=0; i<width*height; i++){
     if(A1.coeff(1, i)!=0) {
-      cout <<v<<""<<"="<< "("<< i/width <<", "<< i%width << "); ";
+      cout <<v(i)<<""<<"="<< i <<", ("<< i/height <<", "<< i%height << "); ";
       somma+=A1.coeff(1, i);
       vettore[c]=v(i);
       c++;
     }
   }
-  cout<<endl<<image(1,0)<<", "<<somma*image(1,0)<<endl;
+  cout<<endl<<"--------------------"<<endl;
+  cout<<image(1,0)<<", "<<somma*image(1,0)<<endl;
+
+  cout<<"--------------------"<<endl;
 
   for(int i=0; i<6; i++){
     cout<<vettore[i]<<"; ";
   }
 
-  cout<<endl;
+  cout<<endl<<"----------------"<<endl;
 
   std::cout << MatrixXd(image.block(0, 0, 5, 5)) << std::endl;
   cout<<"------------------"<<endl;
   std::cout << MatrixXd(smoothed.block(0, 0, 3, 3)) << std::endl;
 
-   Matrix<unsigned char, Dynamic, Dynamic, RowMajor> smoothed_final_image(height, width);
+   Matrix<unsigned char, Dynamic, Dynamic, RowMajor> smoothed_final_image(width, height);
+   cout<<"The matrix has: "<<smoothed_final_image.rows()<<" rows and "<<smoothed.cols()<<" columns"<<endl;
   smoothed_final_image = smoothed.unaryExpr([](double val) -> unsigned char {
   return static_cast<unsigned char>(std::clamp(val, 0.0, 255.0));
   });
