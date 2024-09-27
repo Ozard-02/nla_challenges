@@ -1,6 +1,7 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 #include <iostream>
+#include <cstring>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -39,7 +40,13 @@ int main(int argc, char* argv[]){
 
   // Task 2 //
   MatrixXd noisy_image = random_Noise_Generator(image);
+
+  cout<<"The matrix has: "<<noisy_image.rows()<<" rows and "<<noisy_image.cols()<<" columns"<<endl;
+
   Matrix<unsigned char, Dynamic, Dynamic, RowMajor> noisy_final_image(height, width);
+ 
+ cout<<"The matrix has: "<<noisy_final_image.rows()<<" rows and "<<noisy_final_image.cols()<<" columns"<<endl;
+
   noisy_final_image = noisy_image.unaryExpr([](double val) -> unsigned char {
   return static_cast<unsigned char>(val * 255.0);
   });
@@ -53,67 +60,111 @@ int main(int argc, char* argv[]){
   // Task 3 //
   VectorXd v=Map<VectorXd>(image.data(), image.size());
   cout << "Reshape the image matrix into a vector v of size " << v.size() << ". Is the size equal to mn? " << ((v.size()==height*width)?"True":"False") << endl;
+
+
+  // int c=0;
+
+  
+  // for (int i = 0; i < 10 && i < v.size(); ++i) {
+  //     std::cout << v(i) << "; "; // Print each value
+  // }
+
+  // for(int i=0; i<image.rows(); i++){
+  //   for(int j=0; i<image.cols(); i++){
+  //     if(image(i, j)!=v(j*image.cols()+i)){
+  //       c++;
+  //     }
+  //   }
+  // }
+
+  // cout<<"Numero di valori diversi="<<c<<endl;
+
   VectorXd w=Map<VectorXd>(noisy_image.data(), noisy_image.size());
   cout << "Reshape the noisy image matrix into a vector w of size " << w.size() << ". Is the size equal to mn? " << ((w.size()==height*width)?"True":"False") << endl;
   cout << "Norm of vector v, ||v||=" << v.norm() << endl;
 
   // Task 4 //
-   vector<Triplet<double>> tripletList;
-    tripletList.reserve(9 * height * width); // Reserve space for triplets
-    SparseMatrix<double> A1(height * width, height * width);
+  vector<Triplet<double>> tripletList;
+  tripletList.reserve(9 * height * width); // Reserve space for triplets
+  SparseMatrix<double, RowMajor> A1(height * width, height * width);
 
-    for (int i = 0; i < height * width; i++) {
-        int row = i / width; // Current row
-        int col = i % width; // Current column
+  for (int i = 0; i < height * width; i++) {
 
-        for (int j = -1; j <= 1; j++) {
-            for (int k = -1; k <= 1; k++) {
-                // Calculate neighbor indices
-                int neighborRow = row + j;
-                int neighborCol = col + k;
+    //i=col*width+row
+      int row = i % width; // Current row
+      int col = i / width; // Current column
 
-                // Check if the neighbor indices are within bounds
-                if (neighborRow >= 0 && neighborRow < height && neighborCol >= 0 && neighborCol < width) {
-                    int neighborIndex = neighborRow * width + neighborCol; // Calculate the linear index
-                    tripletList.push_back(Triplet<double>(i, neighborIndex, 1.0 / 9.0));
-                }
-            }
-        }
-    }
+      // if(i<10) cout<<v(i)<<"||"<<image(row, col)<<endl;
+      
 
-    // Construct the sparse matrix from the triplet list
-    A1.setFromTriplets(tripletList.begin(), tripletList.end());
-    A1.makeCompressed();
+      for (int j = -1; j <= 1; j++) {
+          for (int k = -1; k <= 1; k++) {
+              // Calculate neighbor indices
+              int neighborRow = row + j;
+              int neighborCol = col + k;
 
-    // Output the sparse matrix for verification
-    //cout << "Sparse Matrix A1:\n" << MatrixXd(A1) << endl;
+              // Check if the neighbor indices are within bounds
+              if (neighborRow >= 0 && neighborRow < height && neighborCol >= 0 && neighborCol < width) {
+                  int neighborIndex = neighborCol * width + neighborRow; // Calculate the linear index
+                  tripletList.push_back(Triplet<double>(i, neighborIndex, 1.0 / 9.0));
+              }
+          }
+      }
+  }
+  A1.setFromTriplets(tripletList.begin(), tripletList.end());
+
+  //cout << "Sparse Matrix A1:\n" << MatrixXd(A1) << endl;
   std::cout<< "numero di non zeri: "<<A1.nonZeros()<<endl;
 
 
-
-std::cout << MatrixXd(A1.block(4333, 0, 10, 10)) << std::endl;
+  // Output the sparse matrix for verification
+  // std::cout << MatrixXd(A1.block(3250, 0, 10, 10)) << std::endl;
   
   VectorXd smoothed_image=A1*v;
-//cout << "number of elements smoothed_image" << smoothed_image.size() << ". Is the size equal to mn? " << ((smoothed_image.size()==height*width)?"True":"False") << endl;
+  //cout << "number of elements smoothed_image" << smoothed_image.size() << ". Is the size equal to mn? " << ((smoothed_image.size()==height*width)?"True":"False") << endl;
   
 
-//std::cout << "Smoothed image min: " << smoothed_image.minCoeff() << std::endl;
-//std::cout << "Smoothed image max: " << smoothed_image.maxCoeff() << std::endl;
+  //std::cout << "Smoothed image min: " << smoothed_image.minCoeff() << std::endl;
+  //std::cout << "Smoothed image max: " << smoothed_image.maxCoeff() << std::endl;
 
-  smoothed_image *= 255.0;
+  // smoothed_image *= 255.0;
 
-  MatrixXd smoothed(height, width);
-    for (int i = 0; i < height; i++) {
-    for (int j = 0; j < width; j++) {
-      int index = (i + height * j);
+  MatrixXd smoothed(width, height);
+    for (int i = 0; i < width; i++) {
+      for (int j = 0; j < height; j++) {
+      int index = (width*j+i);
       smoothed(i, j) = static_cast<double>(smoothed_image[index]);
     }
   }
 
+  double somma=0;
+
+  double vettore[6];
+  int c=0;
+
+  for(int i=0; i<width*height; i++){
+    if(A1.coeff(1, i)!=0) {
+      cout <<v<<""<<"="<< "("<< i/width <<", "<< i%width << "); ";
+      somma+=A1.coeff(1, i);
+      vettore[c]=v(i);
+      c++;
+    }
+  }
+  cout<<endl<<image(1,0)<<", "<<somma*image(1,0)<<endl;
+
+  for(int i=0; i<6; i++){
+    cout<<vettore[i]<<"; ";
+  }
+
+  cout<<endl;
+
+  std::cout << MatrixXd(image.block(0, 0, 5, 5)) << std::endl;
+  cout<<"------------------"<<endl;
+  std::cout << MatrixXd(smoothed.block(0, 0, 3, 3)) << std::endl;
 
    Matrix<unsigned char, Dynamic, Dynamic, RowMajor> smoothed_final_image(height, width);
   smoothed_final_image = smoothed.unaryExpr([](double val) -> unsigned char {
-  return static_cast<unsigned char>(val);
+  return static_cast<unsigned char>(std::clamp(val, 0.0, 255.0));
   });
   const string output_smooth_image_path = "output_smooth.png";
   if (stbi_write_png(output_smooth_image_path.c_str(), width, height, 1, smoothed_final_image.data(), width) == 0) {
@@ -121,6 +172,7 @@ std::cout << MatrixXd(A1.block(4333, 0, 10, 10)) << std::endl;
     return 1;
     }
   cout << "smooth image saved to " << output_smooth_image_path << endl;
+
 
   return 0;
 }
