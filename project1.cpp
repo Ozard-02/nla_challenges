@@ -74,6 +74,7 @@ int main(int argc, char* argv[]){
       v(index) = image(i,j);
     }
   }
+
   cout << "Reshape the image matrix into a vector v of size " << v.size() << ". Is the size equal to mn? " << ((v.size()==height*width)?"True":"False") << endl;
 
   // VectorXd w=Map<VectorXd>(noisy_image.transpose().data(), noisy_image.size());
@@ -124,7 +125,10 @@ int main(int argc, char* argv[]){
   }
 
   A1.setFromTriplets(tripletList.begin(), tripletList.end());
+  tripletList.clear();
   
+  cout<<"A1 has "<<A1.nonZeros()<< " non zero entries"<<endl;
+
   double sum = 0;
   for (int b = 0; b < 3; b++){
     for (int a = 0; a < height*width; a++){
@@ -207,8 +211,88 @@ int main(int argc, char* argv[]){
     cerr << "Error: Could not save noisy image" << endl;
     return 1;
     }
-  cout << "smooth image saved to " << output_smooth_noisy_image_path << endl;
+  cout << "smooth noisy image saved to " << output_smooth_noisy_image_path << endl;
+
+  // Task 6 //
+  SparseMatrix<double, RowMajor> A2(height * width, height * width);
+  cout<<"Created A2"<<endl;
   
+  MatrixXd H_sh2(3,3);
+  H_sh2<<0, -3, 0,
+         -1, 9, -3,
+         0, -1, 0;
+
+  for (int i = 0; i < height * width; i++) {
+    //i=row*width+col
+    int row = i / width; // Current row
+    int col = i % width; // Current column
+
+     // if(i<10) cout<<v(i)<<"||"<<image(row, col)<<endl;
+      
+    for (int j = -1; j <= 1; j++) {
+      for (int k = -1; k <= 1; k++) {
+        // Calculate neighbor indices
+        int neighborRow = row + j;
+        int neighborCol = col + k;
+
+        // Check if the neighbor indices are within bounds
+        if (neighborRow >= 0 && neighborRow < height && neighborCol >= 0 && neighborCol < width) {
+          int neighborIndex = neighborRow * width + neighborCol; // Calculate the linear index
+          tripletList.push_back(Triplet<double>(i, neighborIndex, H_sh2(j+1, k+1)));
+          }
+        }
+      }
+  }
+
+  cout<<"create tripletlist"<<endl;
+
+  A2.setFromTriplets(tripletList.begin(), tripletList.end());
+  tripletList.clear(); 
+
+  cout<<"set tripletlist"<<endl;
+
+  cout<<"A2 has "<<A2.nonZeros()<< " non zero entries"<<endl;
+
+  bool symmetry = true;
+
+  for (int i = 0; i < height * width; ++i) {
+    for (int j = i + 1; j < height * width; ++j) { // Check only upper triangle
+        if (A2.coeff(i, j) != A2.coeff(j, i)) {
+            symmetry = false;
+            cout<<"("<<i<<","<<j<<")||"<<A2.coeff(i, j)<< " is not equal to "<<A2.coeff(j, i)<<endl;
+            // Stop both loops if symmetry is not true
+            break;  // Break inner loop
+        }
+    }
+    if (!symmetry) break;  // Break outer loop if symmetry is false
+  }
+
+  cout << "Is A2 symmetric? " << (symmetry ? "True" : "False") << endl;
+
+  // Task 7 //
+  VectorXd sharpened_vector=255.0*A2*v;
+
+  MatrixXd sharpened_matrix(height, width);
+
+  cout<<"The matrix has: "<<sharpened_matrix.rows()<<" rows and "<<sharpened_matrix.cols()<<" columns"<<endl;
+  for (int i = 0; i < height; i++) {
+    for (int j = 0; j < width; j++) {
+      int index = i * width + j;  // Row-major indexing
+      sharpened_matrix(i, j) = sharpened_vector[index];
+    }
+  }
+
+  Matrix<unsigned char, Dynamic, Dynamic, RowMajor> sharpened_final_image = 
+  sharpened_matrix.unaryExpr([](double val) -> unsigned char {
+    return static_cast<unsigned char>(std::clamp(val, 0.0, 255.0));
+  });
+
+  const string output_sharpened_image_path = "output_sharpened.png";
+  if (stbi_write_png(output_sharpened_image_path.c_str(), width, height, 1, sharpened_final_image.data(), width) == 0) {
+    cerr << "Error: Could not save noisy image" << endl;
+    return 1;
+    }
+  cout << "Sharpened image saved to " << output_sharpened_image_path << endl;
 
   return 0;
 }
