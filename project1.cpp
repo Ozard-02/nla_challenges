@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cstring>
 #include <fstream>
+#include <unsupported/Eigen/SparseExtra>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -293,6 +294,34 @@ int main(int argc, char* argv[]){
     return 1;
     }
   cout << "Sharpened image saved to " << output_sharpened_image_path << endl;
+
+  //Task 8 //
+
+  string matrixFileOut("./A2Matrix.mtx");
+  saveMarket(A2, matrixFileOut);
+
+  cout << "Matrix A2 saved to " << matrixFileOut << endl;
+
+  saveMarketVector(w, "./w.mtx");
+
+  cout << "Vector w saved to './w.mtx'" << endl;
+
+  double tolerance = 1.e-9;
+  int maxIters = 1000;
+
+  DiagonalPreconditioner<double> D(A2);
+
+  VectorXd x(A2.rows());
+
+  ConjugateGradient<SparseMatrix<double>, Eigen::Lower|Eigen::Upper> cg;
+  cg.setTolerance(tolerance);
+  cg.setMaxIterations(maxIters);
+  cg.compute(A2);
+  x = cg.solve(w);
+
+  cout << "#iterations: " << cg.iterations() << endl;
+  cout << "Relative residual: " << cg.error() << endl;
+
 
   return 0;
 }
