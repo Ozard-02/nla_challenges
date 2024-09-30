@@ -306,7 +306,7 @@ int main(int argc, char* argv[]){
   saveMarketVector(w, "./w.mtx");
 
   cout << "Vector w saved to './w.mtx'" << endl;
-
+/*
   double tolerance = 1.e-9;
   int maxIters = 1000;
 
@@ -323,6 +323,117 @@ int main(int argc, char* argv[]){
   cout << "#iterations: " << cg.iterations() << endl;
   cout << "Relative residual: " << cg.error() << endl;
 
+*/
+  // Task 9 //
+
+
+  //Task 10 //
+
+  MatrixXd H_lap(3,3);
+  H_lap<<0, -1, 0,
+         -1, 4, -1,
+         0, -1, 0;
+
+  SparseMatrix<double, RowMajor> A3(height * width, height * width);
+  cout<<"Created A3"<<endl;
+
+  for (int i = 0; i < height * width; i++) {
+    int row = i / width; // Current row
+    int col = i % width; // Current column
+
+      
+    for (int j = -1; j <= 1; j++) {
+      for (int k = -1; k <= 1; k++) {
+        // Calculate neighbor indices
+        int neighborRow = row + j;
+        int neighborCol = col + k;
+
+        // Check if the neighbor indices are within bounds
+        if (neighborRow >= 0 && neighborRow < height && neighborCol >= 0 && neighborCol < width) {
+          int neighborIndex = neighborRow * width + neighborCol; // Calculate the linear index
+          tripletList.push_back(Triplet<double>(i, neighborIndex, H_lap(j+1, k+1)));
+          }
+        }
+      }
+  }
+
+  A3.setFromTriplets(tripletList.begin(), tripletList.end());
+  tripletList.clear();
+
+  cout << "A3 is symmetric? " << (A3.isApprox(A3.transpose(), 1.e-9) ? "True" : "False") << endl;
+
+  //Task 11 //
+
+  VectorXd laplacian_vector=255.0*A3*v;
+
+  MatrixXd laplacian_matrix(height, width);
+
+  for (int i = 0; i < height; i++) {
+    for (int j = 0; j < width; j++) {
+      int index = i * width + j;  // Row-major indexing
+      laplacian_matrix(i, j) = laplacian_vector[index];
+    }
+  }
+
+  Matrix<unsigned char, Dynamic, Dynamic, RowMajor> laplacian_final_image =
+  laplacian_matrix.unaryExpr([](double val) -> unsigned char {
+    return static_cast<unsigned char>(std::clamp(val, 0.0, 255.0));
+  });
+
+  const string output_laplacian_image_path = "output_laplacian.png";
+  if (stbi_write_png(output_laplacian_image_path.c_str(), width, height, 1, laplacian_final_image.data(), width) == 0) {
+    cerr << "Error: Could not save noisy image" << endl;
+    return 1;
+    }
+
+  cout << "Laplacian image saved to " << output_laplacian_image_path << endl;
+
+  // Task 12 //
+
+  SparseMatrix<double, RowMajor> I (height * width, height * width);
+  I.setIdentity();
+
+  double tolerance = 1.e-10;
+  int maxIters = 1000;
+
+  A3 += I;
+
+  DiagonalPreconditioner<double> D(A3);
+
+  VectorXd y(A3.rows());
+
+  ConjugateGradient<SparseMatrix<double>, Eigen::Lower|Eigen::Upper> cg;
+  cg.setTolerance(tolerance);
+  cg.setMaxIterations(maxIters);
+  cg.compute(A3);
+  y = cg.solve(w);
+
+  cout << "#iterations: " << cg.iterations() << endl;
+  cout << "Relative residual: " << cg.error() << endl;
+
+  // Task 13 //
+
+  MatrixXd y_matrix(height, width);
+
+  for (int i = 0; i < height; i++) {
+    for (int j = 0; j < width; j++) {
+      int index = i * width + j;  // Row-major indexing
+      y_matrix(i, j) = y[index]*255.0;
+    }
+  }
+
+  Matrix<unsigned char, Dynamic, Dynamic, RowMajor> y_final_image =
+  y_matrix.unaryExpr([](double val) -> unsigned char {
+    return static_cast<unsigned char>(std::clamp(val, 0.0, 255.0));
+  });
+
+  const string output_y_image_path = "output_y.png";
+  if (stbi_write_png(output_y_image_path.c_str(), width, height, 1, y_final_image.data(), width) == 0) {
+    cerr << "Error: Could not save noisy image" << endl;
+    return 1;
+    }
+
+  cout << "y image saved to " << output_y_image_path << endl;
 
   return 0;
 }
