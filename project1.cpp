@@ -16,6 +16,14 @@ using namespace std;
 MatrixXd random_Noise_Generator(const MatrixXd& image) {
   MatrixXd noise= MatrixXd::Random(image.rows(), image.cols());
   MatrixXd noise_Added_Image = image + (50.0/255.0)*noise;
+  for (int i = 0; i < noise_Added_Image.rows(); i++) {
+    for (int j = 0; j < noise_Added_Image.cols(); j++) {
+      noise_Added_Image(i, j) =  min(1.0, noise_Added_Image(i, j));
+      noise_Added_Image(i, j) =  max(0.0, noise_Added_Image(i, j));
+      //cant have more than 255 and less than 0
+
+    }
+  }
 
   return noise_Added_Image;
 }
