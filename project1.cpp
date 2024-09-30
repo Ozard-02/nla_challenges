@@ -253,6 +253,7 @@ int main(int argc, char* argv[]){
   cout<<"set tripletlist"<<endl;
 
   cout<<"A2 has "<<A2.nonZeros()<< " non zero entries"<<endl;
+  cout << A2.nonZeros()/A2.size() << endl;
 
   bool symmetry = true;
 
