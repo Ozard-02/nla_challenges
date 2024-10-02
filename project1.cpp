@@ -311,7 +311,14 @@ int main(int argc, char* argv[]){
 
   cout << "Matrix A2 saved to " << matrixFileOut << endl;
 
-  saveMarketVector(w, "./w.mtx");
+    int n = w.size();
+    FILE* out = fopen("w.mtx","w");
+    fprintf(out,"%%%%MatrixMarket vector coordinate real general\n");
+    fprintf(out,"%d\n", n);
+    for (int i=0; i<n; i++) {
+       fprintf(out,"%d %f\n", i ,w(i));
+    }
+    fclose(out);
 
   cout << "Vector w saved to './w.mtx'" << endl;
 /*
