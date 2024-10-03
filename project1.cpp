@@ -341,6 +341,50 @@ int main(int argc, char* argv[]){
 */
   // Task 9 //
 
+    string filePath = "./x.mtx";
+    ifstream file(filePath);
+
+    if (!file.is_open()) {
+        cerr << "Error: Could not open file." << endl;
+        return 1;
+    }
+
+    string line;
+    getline(file, line);
+
+    int vectorSize;
+    file >> vectorSize;
+    
+    VectorXd imported_x(vectorSize);
+    
+    int index;
+    double value;
+    while (file >> index >> value) {
+        imported_x(index - 1) = value;
+    }
+
+    file.close();
+
+    cout << "Imported x vector size: " << imported_x.size() << endl;
+
+    MatrixXd imported_x_matrix(height, width);
+    for(int i = 0; i < height; i++){
+        for(int j = 0; j< width; j++){
+            int index = i * width + j;
+            imported_x_matrix(i, j) = imported_x(index) * 255.0;
+        }
+    }
+
+    Matrix<unsigned char, Dynamic, Dynamic, RowMajor> imported_x_final_image =
+        imported_x_matrix.unaryExpr([](double val) -> unsigned char {
+            return static_cast<unsigned char>(std::clamp(val, 0.0, 255.0));
+        });
+
+    const string output_imported_x_image_path = "output_imported_x.png";
+    if (stbi_write_png(output_imported_x_image_path.c_str(), width, height, 1, imported_x_final_image.data(), width) == 0) {
+        cerr << "Error: Could not save image" << endl;
+        return 1;
+    }
 
   //Task 10 //
 
