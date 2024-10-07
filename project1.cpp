@@ -55,12 +55,10 @@ int main(int argc, char* argv[]){
   // Task 2 //
   MatrixXd noisy_image = random_Noise_Generator(image);
 
-  cout<<"The matrix has: "<<noisy_image.rows()<<" rows and "<<noisy_image.cols()<<" columns"<<endl;
+  cout<<"The noisy matrix has: "<<noisy_image.rows()<<" rows and "<<noisy_image.cols()<<" columns"<<endl;
 
   Matrix<unsigned char, Dynamic, Dynamic, RowMajor> noisy_final_image(height, width);
   
-  cout<<"The matrix has: "<<noisy_final_image.rows()<<" rows and "<<noisy_final_image.cols()<<" columns"<<endl;
-
   noisy_final_image = noisy_image.unaryExpr([](double val) -> unsigned char {
     return static_cast<unsigned char>(val * 255.0);
   });
@@ -75,7 +73,7 @@ int main(int argc, char* argv[]){
   cout << "Noisy image saved to " << output_noisy_image_path << endl;
 
   // Task 3 //
-  // VectorXd v=Map<VectorXd>(image.transpose().data(), image.size());
+
   VectorXd v(height * width);
   for(int i = 0; i < height; i++){
     for(int j = 0; j< width; j++){
@@ -86,7 +84,6 @@ int main(int argc, char* argv[]){
 
   cout << "Reshape the image matrix into a vector v of size " << v.size() << ". Is the size equal to mn? " << ((v.size()==height*width)?"True":"False") << endl;
 
-  // VectorXd w=Map<VectorXd>(noisy_image.transpose().data(), noisy_image.size());
   VectorXd w(height * width);
   for(int i = 0; i < height; i++){
     for(int j = 0; j< width; j++){
@@ -102,7 +99,7 @@ int main(int argc, char* argv[]){
 
   // Task 4 //
   vector<Triplet<double>> tripletList;
-  tripletList.reserve(9 * height * width); // Reserve space for triplets
+  tripletList.reserve(9 * height * width);
   SparseMatrix<double, RowMajor> A1(height * width, height * width);
 
   MatrixXd H_av2(3,3);
@@ -112,21 +109,18 @@ int main(int argc, char* argv[]){
   H_av2/=9.0;
 
   for (int i = 0; i < height * width; i++) {
-    //i=row*width+col
-    int row = i / width; // Current row
-    int col = i % width; // Current column
 
-     // if(i<10) cout<<v(i)<<"||"<<image(row, col)<<endl;
+    int row = i / width; 
+    int col = i % width; 
       
     for (int j = -1; j <= 1; j++) {
       for (int k = -1; k <= 1; k++) {
-        // Calculate neighbor indices
+
         int neighborRow = row + j;
         int neighborCol = col + k;
 
-        // Check if the neighbor indices are within bounds
         if (neighborRow >= 0 && neighborRow < height && neighborCol >= 0 && neighborCol < width) {
-          int neighborIndex = neighborRow * width + neighborCol; // Calculate the linear index
+          int neighborIndex = neighborRow * width + neighborCol; 
           tripletList.push_back(Triplet<double>(i, neighborIndex, H_av2(j+1, k+1)));
           }
         }
@@ -138,48 +132,18 @@ int main(int argc, char* argv[]){
   
   cout<<"A1 has "<<A1.nonZeros()<< " non zero entries"<<endl;
 
-  double sum = 0;
-  for (int b = 0; b < 3; b++){
-    for (int a = 0; a < height*width; a++){
-      if(A1.coeff(b,a) != 0){
-        cout << A1.coeff(b,a) << "in posizione: " << b << " " << a << endl;
-        sum += A1.coeff(b,a);
-      }
-    }
-    cout << "Somma totale riga " << b << " di A1: " << sum << endl;
-    sum = 0;
-  }
-
-  cout << "Fino a qui tutto bene" << endl;
-
   VectorXd smoothed_vector=255*A1*v;
-
-
-  cout << "Coefficiente di image: " << image(0,0) << endl;
-  cout << "Coefficiente di v: " << v(0) << endl;
-  cout << "Coefficiente di smoothed_image: " << smoothed_vector.coeff(0) << endl;
-
-  cout << "Coefficiente di image: " << image(1,0) << endl;
-  cout << "Coefficiente di v: " << v(3250) << endl;
-  cout << "Coefficiente di smoothed_image: " << smoothed_vector.coeff(3250) << endl;
-
-  cout << "number of elements smoothed_image" << smoothed_vector.size() << ". Is the size equal to mn? " << ((smoothed_vector.size()==height*width)?"True":"False") << endl;
-  cout << "Smoothed image rows: " << smoothed_vector.rows() << " and cols: " << smoothed_vector.cols() << endl;
-  cout << "A1 rows: " << A1.rows() << " and cols: " << A1.cols() << endl;
-
-  cout << "Fino a qui tutto bene 2" << endl;
 
   MatrixXd smoothed_matrix(height, width);
 
   cout<<"The matrix has: "<<smoothed_matrix.rows()<<" rows and "<<smoothed_matrix.cols()<<" columns"<<endl;
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
-      int index = i * width + j;  // Row-major indexing
+      int index = i * width + j;  
       smoothed_matrix(i, j) = smoothed_vector[index];
     }
   }
 
-  cout << "Fino a qui tutto bene 3" << endl;
   cout << "Original image dimensions: " << image.rows() << "x" << image.cols() << endl;
   cout << "v vector size: " << v.size() << endl;
   cout << "smoothed_image vector size: " << smoothed_vector.size() << endl;
@@ -205,7 +169,7 @@ int main(int argc, char* argv[]){
   cout<<"The matrix has: "<<smoothed_noisy_matrix.rows()<<" rows and "<<smoothed_noisy_matrix.cols()<<" columns"<<endl;
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
-      int index = i * width + j;  // Row-major indexing
+      int index = i * width + j; 
       smoothed_noisy_matrix(i, j) = smoothed_noisy_vector[index];
     }
   }
@@ -232,52 +196,28 @@ int main(int argc, char* argv[]){
          0, -1, 0;
 
   for (int i = 0; i < height * width; i++) {
-    //i=row*width+col
-    int row = i / width; // Current row
-    int col = i % width; // Current column
-
-     // if(i<10) cout<<v(i)<<"||"<<image(row, col)<<endl;
+    int row = i / width; 
+    int col = i % width; 
       
     for (int j = -1; j <= 1; j++) {
       for (int k = -1; k <= 1; k++) {
-        // Calculate neighbor indices
         int neighborRow = row + j;
         int neighborCol = col + k;
 
-        // Check if the neighbor indices are within bounds
         if (neighborRow >= 0 && neighborRow < height && neighborCol >= 0 && neighborCol < width) {
-          int neighborIndex = neighborRow * width + neighborCol; // Calculate the linear index
+          int neighborIndex = neighborRow * width + neighborCol; 
           tripletList.push_back(Triplet<double>(i, neighborIndex, H_sh2(j+1, k+1)));
           }
         }
       }
   }
 
-  cout<<"create tripletlist"<<endl;
-
   A2.setFromTriplets(tripletList.begin(), tripletList.end());
   tripletList.clear(); 
 
-  cout<<"set tripletlist"<<endl;
-
   cout<<"A2 has "<<A2.nonZeros()<< " non zero entries"<<endl;
-  cout << A2.nonZeros()/A2.size() << endl;
 
-  bool symmetry = true;
-
-  for (int i = 0; i < height * width; ++i) {
-    for (int j = i + 1; j < height * width; ++j) { // Check only upper triangle
-        if (A2.coeff(i, j) != A2.coeff(j, i)) {
-            symmetry = false;
-            cout<<"("<<i<<","<<j<<")||"<<A2.coeff(i, j)<< " is not equal to "<<A2.coeff(j, i)<<endl;
-            // Stop both loops if symmetry is not true
-            break;  // Break inner loop
-        }
-    }
-    if (!symmetry) break;  // Break outer loop if symmetry is false
-  }
-
-  cout << "Is A2 symmetric? " << (symmetry ? "True" : "False") << endl;
+  cout << "A2 is symmetric? " << (A2.isApprox(A2.transpose(), 1.e-9) ? "True" : "False") << endl;
 
   // Task 7 //
   VectorXd sharpened_vector=255.0*A2*v;
@@ -285,9 +225,10 @@ int main(int argc, char* argv[]){
   MatrixXd sharpened_matrix(height, width);
 
   cout<<"The matrix has: "<<sharpened_matrix.rows()<<" rows and "<<sharpened_matrix.cols()<<" columns"<<endl;
+
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
-      int index = i * width + j;  // Row-major indexing
+      int index = i * width + j;  
       sharpened_matrix(i, j) = sharpened_vector[index];
     }
   }
@@ -321,24 +262,7 @@ int main(int argc, char* argv[]){
     fclose(out);
 
   cout << "Vector w saved to './w.mtx'" << endl;
-/*
-  double tolerance = 1.e-9;
-  int maxIters = 1000;
 
-  DiagonalPreconditioner<double> D(A2);
-
-  VectorXd x(A2.rows());
-
-  ConjugateGradient<SparseMatrix<double>, Eigen::Lower|Eigen::Upper> cg;
-  cg.setTolerance(tolerance);
-  cg.setMaxIterations(maxIters);
-  cg.compute(A2);
-  x = cg.solve(w);
-
-  cout << "#iterations: " << cg.iterations() << endl;
-  cout << "Relative residual: " << cg.error() << endl;
-
-*/
   // Task 9 //
 
     string filePath = "./x.mtx";
@@ -397,19 +321,17 @@ int main(int argc, char* argv[]){
   cout<<"Created A3"<<endl;
 
   for (int i = 0; i < height * width; i++) {
-    int row = i / width; // Current row
-    int col = i % width; // Current column
+    int row = i / width; 
+    int col = i % width;
 
       
     for (int j = -1; j <= 1; j++) {
       for (int k = -1; k <= 1; k++) {
-        // Calculate neighbor indices
         int neighborRow = row + j;
         int neighborCol = col + k;
 
-        // Check if the neighbor indices are within bounds
         if (neighborRow >= 0 && neighborRow < height && neighborCol >= 0 && neighborCol < width) {
-          int neighborIndex = neighborRow * width + neighborCol; // Calculate the linear index
+          int neighborIndex = neighborRow * width + neighborCol; 
           tripletList.push_back(Triplet<double>(i, neighborIndex, H_lap(j+1, k+1)));
           }
         }
@@ -429,7 +351,7 @@ int main(int argc, char* argv[]){
 
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
-      int index = i * width + j;  // Row-major indexing
+      int index = i * width + j;  
       laplacian_matrix(i, j) = laplacian_vector[index];
     }
   }
@@ -476,7 +398,7 @@ int main(int argc, char* argv[]){
 
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
-      int index = i * width + j;  // Row-major indexing
+      int index = i * width + j; 
       y_matrix(i, j) = y[index]*255.0;
     }
   }
