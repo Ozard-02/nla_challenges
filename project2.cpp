@@ -64,5 +64,34 @@ int main(int argc, char* argv[]){
     //Not finished
 
 
+    // Task 8 //
+
+    MatrixXd checkerboard = MatrixXd::Zero(200, 200);
+
+    for (int i = 0; i < 200; i++) {
+        for (int j = 0; j < 200; j++) {
+            if ((((i/25) %2 == 0) && ((j/25) %2 == 0) )||( ((i/25) %2 == 1) && ((j/25) %2 == 1))) {
+                checkerboard(i, j) = 1;
+            }
+        }
+    }
+
+    cout << checkerboard.topLeftCorner(26, 26) << endl;
+
+    Matrix<unsigned char, Dynamic, Dynamic, RowMajor> chackerboard_image = checkerboard.unaryExpr([](double val) -> unsigned char {
+         return static_cast<unsigned char>(std::clamp(val, 0.0, 255.0));
+  });
+
+  const string output_checkerboard_image_path = "checkerboard.png";
+  if (stbi_write_png(output_checkerboard_image_path.c_str(), 200, 200, 1, checkerboard.data(), 200) == 0) {
+    cerr << "Error: Could not save noisy image" << endl;
+    return 1;
+    }
+
+  cout << "checkerboard image saved to " << output_checkerboard_image_path << endl;
+
+
+
+
     return 0;
 }
