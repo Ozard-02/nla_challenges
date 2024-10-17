@@ -37,18 +37,18 @@ int main(int argc, char* argv[]){
         return 1;
     }
 
-    MatrixXd image(height, width);
+    MatrixXd A(height, width);
 
     for (int i = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j) {
             int index = (i * width + j);
-            image(i, j) = static_cast<double>(image_data[index]);
+            A(i, j) = static_cast<double>(image_data[index]);
         }
     }
 
     stbi_image_free(image_data);
 
-    MatrixXd symmetric_mat = image.transpose() * image;
+    MatrixXd symmetric_mat = A.transpose() * A;
 
     cout << "symmetric_mat is symmetric? " << (symmetric_mat.isApprox(symmetric_mat.transpose(), 1.e-9) ? "True" : "False") << endl;
     cout << "Symmetric matrix norm: " << symmetric_mat.norm() << endl;
@@ -69,6 +69,26 @@ int main(int argc, char* argv[]){
     saveMarket(symmetric_mat, matrix_market_path.c_str());
 
     //Not finished
+
+
+    // Task 5 //
+    
+    JacobiSVD<MatrixXd> svd2(A, ComputeThinU | ComputeThinV);
+    VectorXd singular_values2 = svd2.singularValues();
+
+    MatrixXd U = svd2.matrixU();
+    MatrixXd V = svd2.matrixV();
+    MatrixXd S = U.transpose() * A * V;
+
+    for(int i = 0; i < singular_values2.size(); i++) {
+        cout << "Singular value " << i << ": " << singular_values2(i)<< " | Matrix value:" << S(i,i) << endl;
+    }
+
+    cout << "U columns: " << U.cols() << " U rows: " << U.rows() << endl;
+    cout << "U is orthogonal? " << ((U.transpose()*U).isApprox(MatrixXd::Identity(U.cols(), U.cols()), 1.e-9) ? "True" : "False") << endl;
+    cout << "V is orthogonal? " << ((V.transpose()*V).isApprox(MatrixXd::Identity(V.cols(), V.cols()), 1.e-9) ? "True" : "False") << endl;
+    cout << "S is diagonal? " << (S.isDiagonal() ? "True" : "False") << endl;
+    cout << "Norm of S:" << S.norm() << endl;
 
 
     // Task 8 //
@@ -103,8 +123,8 @@ int main(int argc, char* argv[]){
 
     // Task 10 // 
 
-    JacobiSVD<MatrixXd> svd2(noisy_checkerboard, ComputeThinU | ComputeThinV);
-    VectorXd singular_values_checkerboard = svd2.singularValues(); //The eigenvalues are already sorted in decreasing order
+    JacobiSVD<MatrixXd> svd3(noisy_checkerboard, ComputeThinU | ComputeThinV);
+    VectorXd singular_values_checkerboard = svd3.singularValues(); //The eigenvalues are already sorted in decreasing order
 
     for (int i = 0; i < 2; i++) {
         cout << "Singular value " << i << ": " << singular_values_checkerboard(i) << endl;
