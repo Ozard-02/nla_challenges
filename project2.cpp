@@ -43,7 +43,7 @@ int main(int argc, char* argv[]){
 
     MatrixXd symmetric_mat = image.transpose() * image;
 
-    cout << "A3 is symmetric? " << (symmetric_mat.isApprox(symmetric_mat.transpose(), 1.e-9) ? "True" : "False") << endl;
+    cout << "symmetric_mat is symmetric? " << (symmetric_mat.isApprox(symmetric_mat.transpose(), 1.e-9) ? "True" : "False") << endl;
     cout << "Symmetric matrix norm: " << symmetric_mat.norm() << endl;
 
 
