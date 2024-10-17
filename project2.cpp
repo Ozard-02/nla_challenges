@@ -13,6 +13,13 @@
 using namespace Eigen;
 using namespace std;
 
+MatrixXd random_Noise_Generator(const MatrixXd& image) {
+  MatrixXd noise= MatrixXd::Random(image.rows(), image.cols());
+  MatrixXd noise_Added_Image = (image + (50.0) * noise).unaryExpr([](double val) { return std::clamp(val, 0.0, 255.0); });
+
+  return noise_Added_Image;
+}
+
 int main(int argc, char* argv[]){
 
     if (argc < 2) {
@@ -70,28 +77,37 @@ int main(int argc, char* argv[]){
 
     for (int i = 0; i < 200; i++) {
         for (int j = 0; j < 200; j++) {
-            if ((((i/25) %2 == 0) && ((j/25) %2 == 0) )||( ((i/25) %2 == 1) && ((j/25) %2 == 1))) {
-                checkerboard(i, j) = 1;
+            if (!((((i/25) %2 == 0) && ((j/25) %2 == 0) )||( ((i/25) %2 == 1) && ((j/25) %2 == 1)))) {
+                checkerboard(i, j) = 255.0;
             }
         }
     }
 
-    cout << checkerboard.topLeftCorner(26, 26) << endl;
+    cout << checkerboard.norm() << endl;
 
-    Matrix<unsigned char, Dynamic, Dynamic, RowMajor> chackerboard_image = checkerboard.unaryExpr([](double val) -> unsigned char {
+    // Task 9 //
+
+    MatrixXd noisy_checkerboard = random_Noise_Generator(checkerboard);
+
+    Matrix<unsigned char, Dynamic, Dynamic, RowMajor> noisy_checkerboard_image = noisy_checkerboard.unaryExpr([](double val) -> unsigned char {
          return static_cast<unsigned char>(std::clamp(val, 0.0, 255.0));
-  });
+    });
 
-  const string output_checkerboard_image_path = "checkerboard.png";
-  if (stbi_write_png(output_checkerboard_image_path.c_str(), 200, 200, 1, checkerboard.data(), 200) == 0) {
-    cerr << "Error: Could not save noisy image" << endl;
-    return 1;
+    const string output_noisy_checkerboard_image_path = "noisy_checkerboard.png";
+    if (stbi_write_png(output_noisy_checkerboard_image_path.c_str(), 200, 200, 1, noisy_checkerboard_image.data(), 200) == 0) {
+        cerr << "Error: Could not save checkerboard image" << endl;
+        return 1;
     }
 
-  cout << "checkerboard image saved to " << output_checkerboard_image_path << endl;
+    cout << "checkerboard image saved to " << output_noisy_checkerboard_image_path << endl;
 
+    // Task 10 // 
 
+    JacobiSVD<MatrixXd> svd2(noisy_checkerboard, ComputeThinU | ComputeThinV);
+    VectorXd singular_values_checkerboard = svd2.singularValues(); //The eigenvalues are already sorted in decreasing order
 
-
+    for (int i = 0; i < 2; i++) {
+        cout << "Singular value " << i << ": " << singular_values_checkerboard(i) << endl;
+    }
     return 0;
 }
