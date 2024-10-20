@@ -76,7 +76,8 @@ int main(int argc, char* argv[]){
 
     // Task 5 //
     
-    JacobiSVD<MatrixXd> svd2(A, ComputeThinU | ComputeThinV);
+    JacobiSVD<MatrixXd> svd2(A, ComputeFullU | ComputeFullV);
+    
     VectorXd singular_values2 = svd2.singularValues();
 
     MatrixXd U = svd2.matrixU();
@@ -86,19 +87,49 @@ int main(int argc, char* argv[]){
     // for(int i = 0; i < singular_values2.size(); i++) {
     //     cout << "Singular value " << i << ": " << singular_values2(i)<< " | Matrix value:" << S(i,i) << endl;
     // }
-
-    cout << "U columns: " << U.cols() << "| U rows: " << U.rows() << endl;
-    cout << "U is orthogonal? " << ((U.transpose()*U).isApprox(MatrixXd::Identity(U.cols(), U.cols()), 1.e-9) ? "True" : "False") << endl;
-    cout << "V is orthogonal? " << ((V.transpose()*V).isApprox(MatrixXd::Identity(V.cols(), V.cols()), 1.e-9) ? "True" : "False") << endl;
-    cout << "S is diagonal? " << (S.isDiagonal() ? "True" : "False") << endl;
+    cout << "A rows: " << height << " | A columns: " << width << endl;
+    cout << "U rows: " << U.rows() << " | U columns: " << U.cols() << endl;
+    cout << "V rows: " << V.rows() << " | V columns: " << V.cols() << endl;
+    cout << "S rows: " << S.rows() << " | S columns: " << S.cols() << endl;
+    cout << "U is orthogonal? " << ((U.transpose()*U).isApprox(MatrixXd::Identity(U.cols(), U.cols()), 1.e-8) ? "True" : "False") << endl;
+    cout << "V is orthogonal? " << ((V.transpose()*V).isApprox(MatrixXd::Identity(V.cols(), V.cols()), 1.e-8) ? "True" : "False") << endl;
+    bool diagonal=true;
+    int i=0;
+    int j=0;
+    while(diagonal&&i<S.rows()&&j<S.cols()){
+        if(abs(S(i , j))>1.e-8&&i!=j) diagonal=false; // Print each element
+        i++;j++;
+    }
+    cout << "S is diagonal? " << (diagonal ? "True" : "False") << endl;
     cout << "Norm of S: " << S.norm() << endl;
 
     // Task 6 //
 
-    MatrixXd C_40 = U.block(0,0, 40, 40);
-    MatrixXd C_80 = U.block(0,0, 80, 80);
-    MatrixXd D_40 = singular_values2.head(40).asDiagonal() * V.block(0,0, 40, 40);
-    MatrixXd D_80 = singular_values2.head(80).asDiagonal() * V.block(0,0, 80, 80);
+    MatrixXd C_40 = U.block(0,0, U.rows(), 40);
+    MatrixXd C_80 = U.block(0,0, U.rows(), 80);
+    MatrixXd D_40(V.rows(), 40);
+    MatrixXd D_80(V.rows(), 80);
+
+    cout << "C_40 has " << C_40.rows() << "x"<<C_40.cols() << endl;
+    cout << "C_80 has " << C_80.rows() << "x"<<C_80.cols() << endl;
+    cout << "D_40 has " << D_40.rows() << "x"<<D_40.cols() << endl;
+    cout << "D_80 has " << D_80.rows() << "x"<<D_80.cols() << endl;
+    cout << "Number of singular values=" << singular_values2.size() << endl;
+
+    for(int i=0; i<D_80.rows(); i++){
+        for(int j=0; j<D_80.cols(); j++){
+            // cout<<"i="<<i<<", j="<<j<<endl;
+            // cout<<V(i,j)<<endl;
+            // cout<<D_80(i,j)<<endl;
+            // cout<<singular_values2(j)<<endl;
+            if(j<D_40.cols()){
+                // cout<<D_40(i,j)<<endl;
+                D_40(i, j)=V(i,j)* singular_values2(j);
+            }
+            D_80(i, j)=V(i, j)*singular_values2(j);
+        }
+    }
+
     //compute non zero entries taking care of the machine precision
     int non_zero_entries_C_40 = 0;
     int non_zero_entries_C_80 = 0;
@@ -150,7 +181,7 @@ int main(int argc, char* argv[]){
     });
 
     const string output_A_40_image_path = "A_40_image.png";
-    if (stbi_write_png(output_A_40_image_path.c_str(), 40, 40, 1, A_40_image.data(), 200) == 0) {
+    if (stbi_write_png(output_A_40_image_path.c_str(), A_tilde_40.cols(), A_tilde_40.rows(), 1, A_40_image.data(), A_tilde_40.cols()) == 0) {
         cerr << "Error: Could not save A_40 image" << endl;
         return 1;
     }
@@ -162,7 +193,7 @@ int main(int argc, char* argv[]){
     });
 
     const string output_A_80_image_path = "A_80_image.png";
-    if (stbi_write_png(output_A_80_image_path.c_str(), 80, 80, 1, A_80_image.data(), 200) == 0) {
+    if (stbi_write_png(output_A_80_image_path.c_str(), A_tilde_80.cols(), A_tilde_80.rows(), 1, A_80_image.data(), A_tilde_40.cols()) == A_tilde_80.cols()) {
         cerr << "Error: Could not save A_80 image" << endl;
         return 1;
     }
