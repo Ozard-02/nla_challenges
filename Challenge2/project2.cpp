@@ -68,8 +68,11 @@ int main(int argc, char* argv[]){
     string matrix_market_path = "symmetric_mat.mtx";
     saveMarket(symmetric_mat, matrix_market_path.c_str());
 
-    //Not finished
+    cout<<"Maximum eigenvalue from lis: 1.045818e+09. Is equal to the previous value? "<<((singular_values(0)-1.045818e+09)/((singular_values(0)+1.045818e+09)/2)<1e-8? "True" :"False")<<endl;
 
+    // Task 4 //
+    
+    //Non trovo uno shift che accellera lol
 
     // Task 5 //
     
@@ -80,15 +83,22 @@ int main(int argc, char* argv[]){
     MatrixXd V = svd2.matrixV();
     MatrixXd S = U.transpose() * A * V;
 
-    for(int i = 0; i < singular_values2.size(); i++) {
-        cout << "Singular value " << i << ": " << singular_values2(i)<< " | Matrix value:" << S(i,i) << endl;
-    }
+    // for(int i = 0; i < singular_values2.size(); i++) {
+    //     cout << "Singular value " << i << ": " << singular_values2(i)<< " | Matrix value:" << S(i,i) << endl;
+    // }
 
     cout << "U columns: " << U.cols() << " U rows: " << U.rows() << endl;
     cout << "U is orthogonal? " << ((U.transpose()*U).isApprox(MatrixXd::Identity(U.cols(), U.cols()), 1.e-9) ? "True" : "False") << endl;
     cout << "V is orthogonal? " << ((V.transpose()*V).isApprox(MatrixXd::Identity(V.cols(), V.cols()), 1.e-9) ? "True" : "False") << endl;
     cout << "S is diagonal? " << (S.isDiagonal() ? "True" : "False") << endl;
     cout << "Norm of S:" << S.norm() << endl;
+
+    // Task 6 //
+
+    
+
+    // Task 7 //
+
 
 
     // Task 8 //
