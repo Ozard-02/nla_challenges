@@ -137,28 +137,28 @@ int main(int argc, char* argv[]){
     int non_zero_entries_D_80 = 0;
     for(int i = 0; i < C_40.rows(); i++) {
         for(int j = 0; j < C_40.cols(); j++) {
-            if(C_40(i,j) > 1.e-9) {
+            if(C_40(i,j) > 1.e-8) {
                 non_zero_entries_C_40++;
             }
         }
     }
     for(int i = 0; i < C_80.rows(); i++) {
         for(int j = 0; j < C_80.cols(); j++) {
-            if(C_80(i,j) > 1.e-9) {
+            if(C_80(i,j) > 1.e-8) {
                 non_zero_entries_C_80++;
             }
         }
     }
     for(int i = 0; i < D_40.rows(); i++) {
         for(int j = 0; j < D_40.cols(); j++) {
-            if(D_40(i,j) > 1.e-9) {
+            if(D_40(i,j) > 1.e-8) {
                 non_zero_entries_D_40++;
             }
         }
     }
     for(int i = 0; i < D_80.rows(); i++) {
         for(int j = 0; j < D_80.cols(); j++) {
-            if(D_80(i,j) > 1.e-9) {
+            if(D_80(i,j) > 1.e-8) {
                 non_zero_entries_D_80++;
             }
         }
