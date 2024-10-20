@@ -87,11 +87,11 @@ int main(int argc, char* argv[]){
     //     cout << "Singular value " << i << ": " << singular_values2(i)<< " | Matrix value:" << S(i,i) << endl;
     // }
 
-    cout << "U columns: " << U.cols() << " U rows: " << U.rows() << endl;
+    cout << "U columns: " << U.cols() << "| U rows: " << U.rows() << endl;
     cout << "U is orthogonal? " << ((U.transpose()*U).isApprox(MatrixXd::Identity(U.cols(), U.cols()), 1.e-9) ? "True" : "False") << endl;
     cout << "V is orthogonal? " << ((V.transpose()*V).isApprox(MatrixXd::Identity(V.cols(), V.cols()), 1.e-9) ? "True" : "False") << endl;
     cout << "S is diagonal? " << (S.isDiagonal() ? "True" : "False") << endl;
-    cout << "Norm of S:" << S.norm() << endl;
+    cout << "Norm of S: " << S.norm() << endl;
 
     // Task 6 //
 
@@ -134,20 +134,40 @@ int main(int argc, char* argv[]){
     }
     
     //print results
-    cout << "Non zero entries in C_40: " << non_zero_entries_C_40 << endl;
-    cout << "Non zero entries in C_80: " << non_zero_entries_C_80 << endl;
-    cout << "Non zero entries in D_40: " << non_zero_entries_D_40 << endl;
-    cout << "Non zero entries in D_80: " << non_zero_entries_D_80 << endl;
-    
-
-
-
-
+    cout << "C_40 has "<<C_40.rows()<<"x"<<C_40.cols()<<" and has non zero entries in C_40: " << non_zero_entries_C_40 << endl;
+    cout << "C_80 has "<<C_80.rows()<<"x"<<C_80.cols()<<" and has non zero entries in C_80: " << non_zero_entries_C_80 << endl;
+    cout << "D_40 has "<<D_40.rows()<<"x"<<D_40.cols()<<" and has non zero entries in D_40: " << non_zero_entries_D_40 << endl;
+    cout << "D_80 has "<<D_80.rows()<<"x"<<D_80.cols()<<" and has non zero entries in D_80: " << non_zero_entries_D_80 << endl;
 
 
     // Task 7 //
 
+    MatrixXd A_tilde_40=C_40*D_40.transpose();
+    MatrixXd A_tilde_80=C_80*D_80.transpose();
 
+    Matrix<unsigned char, Dynamic, Dynamic, RowMajor> A_40_image = A_tilde_40.unaryExpr([](double val) -> unsigned char {
+         return static_cast<unsigned char>(std::clamp(val, 0.0, 255.0));
+    });
+
+    const string output_A_40_image_path = "A_40_image.png";
+    if (stbi_write_png(output_A_40_image_path.c_str(), 40, 40, 1, A_40_image.data(), 200) == 0) {
+        cerr << "Error: Could not save A_40 image" << endl;
+        return 1;
+    }
+
+    cout << "A_40 image saved to " << output_A_40_image_path << endl;
+
+     Matrix<unsigned char, Dynamic, Dynamic, RowMajor> A_80_image = A_tilde_80.unaryExpr([](double val) -> unsigned char {
+         return static_cast<unsigned char>(std::clamp(val, 0.0, 255.0));
+    });
+
+    const string output_A_80_image_path = "A_80_image.png";
+    if (stbi_write_png(output_A_80_image_path.c_str(), 80, 80, 1, A_80_image.data(), 200) == 0) {
+        cerr << "Error: Could not save A_80 image" << endl;
+        return 1;
+    }
+
+    cout << "A_80 image saved to " << output_A_80_image_path << endl;   
 
     // Task 8 //
 
