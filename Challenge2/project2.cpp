@@ -55,7 +55,7 @@ int main(int argc, char* argv[]){
 
 
     // Task 2 //
-    JacobiSVD<MatrixXd> svd(symmetric_mat, ComputeThinU | ComputeThinV);
+    BDCSVD<MatrixXd> svd(symmetric_mat, ComputeThinU | ComputeThinV);
     VectorXd singular_values = svd.singularValues(); //The eigenvalues are already sorted in decreasing order
 
     for (int i = 0; i < 2; i++) {
@@ -76,7 +76,7 @@ int main(int argc, char* argv[]){
 
     // Task 5 //
     
-    JacobiSVD<MatrixXd> svd2(A, ComputeFullU | ComputeFullV);
+    BDCSVD<MatrixXd> svd2(A, ComputeFullU | ComputeFullV);
     
     VectorXd singular_values2 = svd2.singularValues();
 
@@ -232,7 +232,7 @@ int main(int argc, char* argv[]){
 
     // Task 10 // 
 
-    JacobiSVD<MatrixXd> svd_checkboard(noisy_checkerboard, ComputeFullU | ComputeFullV);
+    BDCSVD<MatrixXd> svd_checkboard(noisy_checkerboard, ComputeFullU | ComputeFullV);
     VectorXd singular_values_checkerboard = svd_checkboard.singularValues(); //The eigenvalues are already sorted in decreasing order
 
     for (int i = 0; i < 2; i++) {
