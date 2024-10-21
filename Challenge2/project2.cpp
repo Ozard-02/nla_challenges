@@ -71,6 +71,10 @@ int main(int argc, char* argv[]){
     cout<<"Maximum eigenvalue from lis: 1.045818e+09. Is equal to the previous value? "<<((singular_values(0)-1.045818e+09)/((singular_values(0)+1.045818e+09)/2)<1e-8? "True" :"False")<<endl;
 
     // Task 4 //
+   
+
+    cout<<"Best shift appliable to reduce iteration: 4e7. which goes from 8 to 7 iterations\n"<<"using command:";
+    cout<<"./eigen1 symmetric_mat.mtx eigenvalues.txt history.txt -e pi -etol 1e-8 -shift 4e7"<<endl;
     
     //Non trovo uno shift che accellera lol
 
