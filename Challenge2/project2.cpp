@@ -75,6 +75,9 @@ int main(int argc, char* argv[]){
 
     cout<<"Best shift appliable to reduce iteration: 4e7. which goes from 8 to 7 iterations\n"<<"using command:";
     cout<<"./eigen1 symmetric_mat.mtx eigenvalues.txt history.txt -e pi -etol 1e-8 -shift 4e7"<<endl;
+
+    //With inverse iteration we can reduce the number of iterations to 3
+    cout <<"./eigen1 symmetric_mat.mtx eigenvalues.txt history.txt -e ii -etol 1e-8 -shift 1.045818e+09"<< endl;
     
     //Non trovo uno shift che accellera lol
 
