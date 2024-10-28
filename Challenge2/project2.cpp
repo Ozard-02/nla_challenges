@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cstring>
 #include <fstream>
+#include <iomanip>
 #include <unsupported/Eigen/SparseExtra>
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -59,16 +60,17 @@ int main(int argc, char* argv[]){
     VectorXd singular_values = svd.singularValues(); //The eigenvalues are already sorted in decreasing order
 
     for (int i = 0; i < 2; i++) {
-        cout << "Singular value " << i << ": " << singular_values(i) << endl;
+        cout << "Singular value " << i << setprecision(9) << ": " << singular_values(i) << endl;
     }
 
     // Task 3 //
 
-    //export "symmetric_mat" in the matrix market format 
     string matrix_market_path = "symmetric_mat.mtx";
     saveMarket(symmetric_mat, matrix_market_path.c_str());
 
-    cout<<"Maximum eigenvalue from lis: 1.045818e+09. Is equal to the previous value? "<<((singular_values(0)-1.045818e+09)/((singular_values(0)+1.045818e+09)/2)<1e-8? "True" :"False")<<endl;
+    cout<<"Maximum eigenvalue from lis: 1.045818e+09. Is equal to the previous value? "<<(abs((1.045818e+09 - singular_values(0))/(singular_values(0)))<1e-6? "True" :"False")<<endl;
+    cout << "Singular value 0: " << setprecision(9) << singular_values(0) << endl;
+    cout << "Difference relative: " << abs((1.045818e+09 - singular_values(0))/(singular_values(0)))<< endl;
 
     // Task 4 //
    
@@ -78,8 +80,6 @@ int main(int argc, char* argv[]){
 
     //With inverse iteration we can reduce the number of iterations to 3
     cout <<"./eigen1 symmetric_mat.mtx eigenvalues.txt history.txt -e ii -etol 1e-8 -shift 1.045818e+09"<< endl;
-    
-    //Non trovo uno shift che accellera lol
 
     // Task 5 //
     
@@ -104,7 +104,7 @@ int main(int argc, char* argv[]){
     int i=0;
     int j=0;
     while(diagonal&&i<S.rows()&&j<S.cols()){
-        if(abs(S(i , j))>1.e-8&&i!=j) diagonal=false; // Print each element
+        if(abs(S(i , j))>1.e-8&&i!=j) diagonal=false;
         i++;j++;
     }
     cout << "S is diagonal? " << (diagonal ? "True" : "False") << endl;
@@ -240,7 +240,7 @@ int main(int argc, char* argv[]){
     // Task 10 // 
 
     BDCSVD<MatrixXd> svd_checkboard(noisy_checkerboard, ComputeThinU | ComputeThinV);
-    VectorXd singular_values_checkerboard = svd_checkboard.singularValues(); //The eigenvalues are already sorted in decreasing order
+    VectorXd singular_values_checkerboard = svd_checkboard.singularValues();
 
     for (int i = 0; i < 2; i++) {
         cout << "Singular value " << i << ": " << singular_values_checkerboard(i) << endl;
@@ -266,7 +266,7 @@ int main(int argc, char* argv[]){
     i=0;
     j=0;
     while(diagonal&&i<S_checkerboard.rows()&&j<S_checkerboard.cols()){
-        if(abs(S_checkerboard(i , j))>1.e-8&&i!=j) diagonal=false; // Print each element
+        if(abs(S_checkerboard(i , j))>1.e-8&&i!=j) diagonal=false;
         i++;j++;
     }
     cout << "S is diagonal? " << (diagonal ? "True" : "False") << endl;
